@@ -1,14 +1,12 @@
+import argparse
 import requests
+import time
 from pymongo import MongoClient
 
-MONGODB_IP = "localhost"
-MONGODB_PORT = 27017
-mongodb_client = MongoClient(MONGODB_IP, MONGODB_PORT)
-mongodb_database = mongodb_client["dota_raw"]
 
-
-def insert_match_mongo(match_data_details, db_collection):
+def insert_match_mongo(match_data_details, db_collection, sleep_time=0):
     db_collection.insert_one(match_data_details)
+    time.sleep(sleep_time)
 
 
 def get_player_infos(steam_id):
@@ -38,13 +36,42 @@ def get_match_details(player_match_id):
     return player_match_detail
 
 
-player_data_return = get_player_infos(21916823)
-print(f"Searching matches for {player_data_return['name']} - {player_data_return['mmr']}")
+def get_most_recent_matches(player_match_return, db_collection):
+    most_recent_player_match = db_collection.find_one(sort=[('start_time', -1)])
+    if most_recent_player_match is not None:
+        most_recent_player_match = most_recent_player_match['start_time']
 
-player_match_return = get_player_matches(21916823)
-print(f"{player_match_return['total_matches']} found!")
-for match_id in player_match_return['matches_id']:
-    match_data_details = get_match_details(match_id)
-    insert_match_mongo(match_data_details, mongodb_database["match_player_history"])
+    for match_id in player_match_return['matches_id']:
+        match_data_details_api = get_match_details(match_id)
+        if most_recent_player_match == match_data_details_api['start_time']:
+            print("All matches already in MongoDB!")
+            break
+        insert_match_mongo(match_data_details_api, db_collection, 1)
 
 
+def get_all_matches(player_match_return, db_collection):
+    return
+    # TODO options: verify all player's match
+
+
+def main():
+    MONGODB_IP = "localhost"
+    MONGODB_PORT = 27017
+    mongodb_client = MongoClient(MONGODB_IP, MONGODB_PORT)
+    mongodb_database = mongodb_client["dota_raw"]
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("steam_id")
+    args = parser.parse_args()
+
+    player_data_return = get_player_infos(args.steam_id)
+    print(f"Searching matches for {player_data_return['name']} - MMR: {player_data_return['mmr']}")
+
+    player_match_return = get_player_matches(args.steam_id)
+    print(f"{player_match_return['total_matches']} matches found!")
+
+    get_most_recent_matches(player_match_return, mongodb_database["match_player_history"])
+
+
+if __name__ == "__main__":
+    main()
