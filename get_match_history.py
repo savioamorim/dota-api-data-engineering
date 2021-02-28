@@ -17,7 +17,7 @@ def get_player_infos(steam_id):
     return player_data
 
 
-def get_player_matches(steam_id):
+def get_all_player_matches_id(steam_id):
     url = f"https://api.opendota.com/api/players/{steam_id}/matches"
     player_match_json = requests.get(url).json()
     match_id = []
@@ -67,10 +67,10 @@ def main():
     player_data_return = get_player_infos(args.steam_id)
     print(f"Searching matches for {player_data_return['name']} - MMR: {player_data_return['mmr']}")
 
-    player_match_return = get_player_matches(args.steam_id)
-    print(f"{player_match_return['total_matches']} matches found!")
+    player_matches_id_return = get_all_player_matches_id(args.steam_id)
+    print(f"{player_matches_id_return['total_matches']} matches found!")
 
-    get_most_recent_matches(player_match_return, mongodb_database["match_player_history"])
+    get_most_recent_matches(player_matches_id_return, mongodb_database["match_player_history"])
 
 
 if __name__ == "__main__":
