@@ -5,6 +5,6 @@ services:
     image: mongo:3
     restart: always
     volumes:
-      - /run/data/db/mongo:/data/db
+      - /home/savioamorim/data-station/mongodb:/data/db
     ports:
       - "27017:27017"
