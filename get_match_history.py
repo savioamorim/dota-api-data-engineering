@@ -50,8 +50,18 @@ def get_most_recent_matches(player_match_return, db_collection):
 
 
 def get_all_matches(player_match_return, db_collection):
-    return
-    # TODO options: verify all player's match
+    matches_id_mongo = list(db_collection.find({}, {'_id': 0, 'match_id': 1}))
+    matches_id = []
+    for match_id in matches_id_mongo:
+        matches_id.append(match_id['match_id'])
+
+    print(matches_id)
+    for match_id_api in player_match_return['matches_id']:
+        print(f"MATCH_ID_API:{match_id_api}")
+        if match_id_api in matches_id:
+            continue
+        match_data_details_api = get_match_details(match_id_api)
+        insert_match_mongo(match_data_details_api, db_collection, 1)
 
 
 def main():
@@ -62,6 +72,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("steam_id")
+    parser.add_argument("--search_type", choices=["recent", "all"])
     args = parser.parse_args()
 
     player_data_return = get_player_infos(args.steam_id)
@@ -70,7 +81,12 @@ def main():
     player_matches_id_return = get_all_player_matches_id(args.steam_id)
     print(f"{player_matches_id_return['total_matches']} matches found!")
 
-    get_most_recent_matches(player_matches_id_return, mongodb_database["match_player_history"])
+    if args.search_type == 'recent':
+        print('MOST RECENT!')
+        get_most_recent_matches(player_matches_id_return, mongodb_database["match_player_history"])
+    else:
+        print('ALL MATCHES')
+        get_all_matches(player_matches_id_return, mongodb_database["match_player_history"])
 
 
 if __name__ == "__main__":
