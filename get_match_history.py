@@ -83,7 +83,7 @@ def main():
 
     if args.search_type == 'recent':
         get_most_recent_matches(player_matches_id_return, mongodb_database["match_player_history"])
-    else:
+    elif args.search_type == 'all':
         get_all_matches(player_matches_id_return, mongodb_database["match_player_history"])
 
 
