@@ -82,10 +82,8 @@ def main():
     print(f"{player_matches_id_return['total_matches']} matches found!")
 
     if args.search_type == 'recent':
-        print('MOST RECENT!')
         get_most_recent_matches(player_matches_id_return, mongodb_database["match_player_history"])
     else:
-        print('ALL MATCHES')
         get_all_matches(player_matches_id_return, mongodb_database["match_player_history"])
 
 
