@@ -2,6 +2,8 @@ import argparse
 import requests
 import time
 from pymongo import MongoClient
+import dotenv
+import os
 
 
 def insert_match_mongo(match_data_details, db_collection, sleep_time=0):
@@ -55,7 +57,6 @@ def get_all_matches(player_match_return, db_collection):
     for match_id in matches_id_mongo:
         matches_id.append(match_id['match_id'])
 
-    print(matches_id)
     for match_id_api in player_match_return['matches_id']:
         print(f"MATCH_ID_API:{match_id_api}")
         if match_id_api in matches_id:
@@ -65,8 +66,9 @@ def get_all_matches(player_match_return, db_collection):
 
 
 def main():
-    MONGODB_IP = "localhost"
-    MONGODB_PORT = 27017
+    dotenv.load_dotenv(dotenv.find_dotenv())
+    MONGODB_IP = os.getenv("MONGODB_IP")
+    MONGODB_PORT = int(os.getenv("MONGODB_PORT"))
     mongodb_client = MongoClient(MONGODB_IP, MONGODB_PORT)
     mongodb_database = mongodb_client["dota_raw"]
 
